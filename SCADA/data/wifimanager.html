@@ -9,7 +9,7 @@
 <body>
   <div class="wrapper">
   <div class="sidebar">
-    <h2>Sidebar</h2>
+    <h2>Menu</h2>
     <ul>
         <li><a href="index.html"><i class="fas fa-home"></i>Informacio del sistema</a></li>
         <li><a href="monitoreo.html"><i class="fas fa-user"></i>Monitoreo Puntual</a></li>
@@ -18,6 +18,34 @@
     </ul> 
 </div>
 </div>
+ <div class="info">
+          <div><br>
+            <p>Conexion Wifi 1:  <span id="ssid"></p>
+            <br>
+            <p>Conexion Wifi 2:  <span id="ssid2"></p>
+            <br>
+            <p>Conexion Wifi 3: <span id="ssid3"> </p>
+              <script>
+        
+                setInterval(getInfo, 50);
+                
+                function getInfo(){
+                  var xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function() {
+                          if (this.readyState == 4 && this.status == 200) {
+                            var txt = this.responseText;
+                            var obj = JSON.parse(txt);
+                            document.getElementById("ssid").innerHTML = obj.ssid;
+                            document.getElementById("ssid2").innerHTML = obj.ssid2;
+                            document.getElementById("ssid3").innerHTML = obj.ssid3;
+                          }  
+                        };
+                        xhttp.open("GET", "network", true);
+                        xhttp.send();
+                    }
+            </script>
+        
+          </div>
   <div class="content">
     <div class="card-grid">
       <div class="card">
@@ -39,3 +67,4 @@
   </div>
 </body>
 </html>
+
