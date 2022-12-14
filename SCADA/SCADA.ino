@@ -104,7 +104,7 @@ void setup() {
     Serial.println(WiFi.softAPIP());
 
     // Inicializa respondedor mDNS para ESP-32-SCADA.local
-    if (!MDNS.begin("ESP-32-SCADA")) {
+    if (!MDNS.begin("ESP-32-SCADA2")) {
       // En caso de error imprime mensaje y se queda ciclado
       Serial.println("Error al configurar el respondedor MDNS!");
       while (true)
@@ -116,6 +116,8 @@ void setup() {
     server.on("/",HTTP_GET, handleRoot);
     server.on("/getInfo", HTTP_GET, getInfo);
     server.on("/sensors", HTTP_GET, sensors);
+    server.on("/network",  HTTP_GET,networks);
+  
     // Si no encuentra la ruta, lo maneja como un URI (identificador de recurso/archivo)
     server.onNotFound(handleWebRequests); 
     server.begin();
@@ -225,6 +227,30 @@ void getInfo2() {
   server.send(200, "text/json", json);
   Serial.println("se envia evento:" + json);
 }
+
+
+void networks()
+{
+  String json;
+  StaticJsonBuffer<500> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+   int n = WiFi.scanNetworks();
+    Serial.println("scan done");
+    Serial.print(n);
+    Serial.println(" networks found");
+        
+        for (int i = 0; i < n; ++i) 
+        {
+            // Print SSID and RSSI for each network found
+            if(i==0)  root["ssid"] = WiFi.SSID(i);
+            else if (i==1)  root["ssid2"] = WiFi.SSID(i);
+            else if (i==2)  root["ssid3"] = WiFi.SSID(i);
+        }
+        root.printTo(json);
+        server.send(200, "text/json", json);
+        Serial.println(json);
+}
+
 
 void sensors() {
 
