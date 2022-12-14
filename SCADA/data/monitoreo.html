@@ -1,83 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Side Navigation Bar</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="Chart.min.js"></script>
-  <script src="utils.js"></script>
-  
-  <style>
-    canvas{
+  <head>
+    <meta charset="UTF-8">
+    <title>Side Navigation Bar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="Chart.min.js"></script>
+    <script src="utils.js"></script>
+    <style>
+      canvas{
         -moz-user-select: none;
         -webkit-user-select: none;
         -ms-user-select: none;
-    }
+      }
     </style>
+  </head>
 
-</head>
-<body>
-
-<div class="wrapper">
-    <div class="sidebar">
+  <body>
+    <div class="wrapper">
+      <div class="sidebar">
         <h2>Sidebar</h2>
         <ul>
             <li><a href="index.html"><i class="fas fa-home"></i>Informacio del sistema</a></li>
             <li><a href="monitoreo.html"><i class="fas fa-user"></i>Monitoreo Puntual</a></li>
             <li><a href="graficas.html"><i class="fas fa-address-card"></i>Graficas</a></li>
-            <li><a href="#"><i class="fas fa-address-book"></i>Acerca de</a></li>
+            <li><a href="wifimanager.html"><i class="fas fa-address-book"></i>Redes</a></li>
         </ul> 
-        <div class="social_media">
-          <a href="#"><i class="fab fa-facebook-f"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-      </div>
     </div>
-    <div class="main_content">
-        <div class="header">Welcome!! Have a nice day.</div>  
-        <div class="info">
-          <div>
-            <br>
-                <p>X :  <span id="x"></span> </p>
-                <br>
-                <p>Y :  <span id="y"></span> </p>
-                <br>
-                <p>Z :  <span id="z"></span> </p>
-                <br>
+      <div class="main_content">
+        <div class="header">Sistema de monitoreo.</div>  
+          <div class="info">
+            <div>
+              <br>
+                <p>X :  <span id="x"></span> </p> <br>
+                <p>Y :  <span id="y"></span> </p> <br>
+                <p>Z :  <span id="z"></span> </p> <br>
                 <br>
                 <br>
                 <div style="width:50%;">
-
-    <script>
-        
-        setInterval(getInfo, 50);
-        
-        function getInfo(){
-          var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                  if (this.readyState == 4 && this.status == 200) {
-                    var txt = this.responseText;
-                    var obj = JSON.parse(txt);
-                    document.getElementById("x").innerHTML = obj.x;
-                    document.getElementById("y").innerHTML = obj.y;
-                    document.getElementById("z").innerHTML = obj.z;
-                  }  
-                };
-                xhttp.open("GET", "sensors", true);
-                xhttp.send();
-            }
-    </script>
-
-
-
-
+                  <script>
+                      setInterval(getInfo, 50);
+                      function getInfo(){
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function() {
+                          if (this.readyState == 4 && this.status == 200) {
+                            var txt = this.responseText;
+                            var obj = JSON.parse(txt);
+                            document.getElementById("x").innerHTML = obj.x;
+                            document.getElementById("y").innerHTML = obj.y;
+                            document.getElementById("z").innerHTML = obj.z;
+                          }  
+                        };
+                        xhttp.open("GET", "sensors", true);
+                        xhttp.send();
+                      }
+                  </script>
+              </div>
           </div>
-      </div>
+        </div>
     </div>
-</div>
-
-</body>
+  </body>
 </html>
-
-
-

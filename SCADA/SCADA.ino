@@ -18,8 +18,8 @@
 //------------------ DIRECTIVAS DE PREPROCESADOR DE WEB SERVER------------------
 
 #include <ArduinoJson.h> // Serialización de objetos JSON
+#include <driver/adc.h>  // Define enums para configurar ADC
 #include <ESPmDNS.h>     // Protocolo multicast DNS para ESP32
-//#include <ESP8266mDNS.h> // Protocolo multicast DNS para ESP8266
 #include <SPIFFS.h>      // SPI Flash File System. Sistema de archivos
 #include <WebServer.h>   // Servidor Web. Soporta un solo cliente, GET/POST
 #include <WiFi.h>        // Habilita comunicación WiFi
@@ -31,17 +31,19 @@
 // -----------------------------------------------------------------------------
 
 //Configuración de ESP en modo AP
-const char *ssid        = "IZZI-145F";
-const char *password    = "2WC456403972";
+const char *ssid        = "NETGEAR"; //"IZZI-145F";
+const char *password    = ""; //"2WC456403972";
 const char *ssid_AP     = "Esp32_AP";
 const char *password_AP = "";
 const char *htmlfile    = "/index.html";
 
-float x = 0;
-float y = 0;
-float z = 0;
+float x;
+float y;
+float z;
 
 WebServer server(80);
+// AsyncWebServer server(80);
+
 
 // -----------------------------------------------------------------------------
 
@@ -52,6 +54,7 @@ void getInfo();
 void getInfo2();
 void sensors();
 
+// Tareas de FreeRTOS
 void sensa(void *pvParameters );
 void webserver(void *pvParameters );
 
@@ -59,32 +62,78 @@ void webserver(void *pvParameters );
 
 
 void setup() {
-  Serial.begin(115200);
-  xTaskCreatePinnedToCore(
-    sensa
-    ,"Sensores"   
-    ,1024  
-    ,NULL
-    ,2  
-    ,NULL 
-    ,ARDUINO_RUNNING_CORE);
+  // ---------------------------- Setup de webserver ---------------------------
 
-  xTaskCreatePinnedToCore(
-    webserver
-    ,"Servidor"
-    ,1024  
-    ,NULL
-    ,1  
-    ,NULL 
-    ,ARDUINO_RUNNING_CORE);
+    // Configuración de ADC1 canal 6 y 7
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+    adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_11);
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    Serial.begin(115200);
+    Serial.println();
+
+    // Inicializar el sistema de archivos
+    SPIFFS.begin();
+    Serial.println("Sistema de archivos inicializado");
+
+    // Conexión con router WiFi
+    WiFi.mode(WIFI_AP);  // WIFI_AP  WIFI_STA  WIFI_AP_STA
+    WiFi.softAP(ssid_AP, password_AP);
+    WiFi.begin(ssid, password);  
+
+    Serial.println("");
+    for (int k = 0; k < 20; k++) {
+      if (WiFi.status() == WL_CONNECTED)
+        break;
+      // yield();
+      vTaskDelay(pdMS_TO_TICKS(500));
+      // yield();
+      Serial.print(".");
+
+    }
+    yield();
+
+    // Muestra datos de conexión en Serial Monitor
+    Serial.println("");
+    Serial.print("Conectado a ");
+    Serial.println(ssid);
+    Serial.print("Dirección IP: ");
+    Serial.println(WiFi.localIP());  // Dirección IP asignada a su ESP
+    Serial.print("Dirección IP (Access Point): ");
+    Serial.println(WiFi.softAPIP());
+
+    // Inicializa respondedor mDNS para ESP-32-SCADA.local
+    if (!MDNS.begin("ESP-32-SCADA")) {
+      // En caso de error imprime mensaje y se queda ciclado
+      Serial.println("Error al configurar el respondedor MDNS!");
+      while (true)
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+
+    // Inicializar el servidor web
+    // Define las rutas y métodos a ejecutar
+    server.on("/",HTTP_GET, handleRoot);
+    server.on("/getInfo", HTTP_GET, getInfo);
+    server.on("/sensors", HTTP_GET, sensors);
+    // Si no encuentra la ruta, lo maneja como un URI (identificador de recurso/archivo)
+    server.onNotFound(handleWebRequests); 
+    server.begin();
+
+    Serial.println("mDNS responder started");
+    MDNS.addService("http", "tcp", 80);
+    Wire.begin();
+
+    Serial.println("Todo al 100%");
+
+  // -------------------------- Inicia tasks de FreeRTOS -----------------------
+  
+  xTaskCreatePinnedToCore(sensa, "Sensores", 1024, NULL, 2, NULL, ARDUINO_RUNNING_CORE);
+  xTaskCreatePinnedToCore(webserver, "Servidor", 4096, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
 }
 
-void loop() {
-  server.handleClient();
-  x = analogRead(0);
-  y = analogRead(0);
-  z = analogRead(0);
-}
+// Loop vacío, se ejecutan tareas de FreeRTOS
+void loop() {}
 
 // -----------------------------------------------------------------------------
 
@@ -153,6 +202,7 @@ void getInfo() {
   root["ssid"] = WiFi.SSID();
   IPAddress ip = WiFi.localIP();
   root["ip"] = String() + ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3];
+  // root["masc"] = String() + 
   root.printTo(json);
   server.send(200, "text/json", json);
   Serial.println(json);
@@ -191,70 +241,36 @@ void sensors() {
 
 void sensa(void *pvParameters) {
   (void) pvParameters;
-  pinMode(LED_BUILTIN, OUTPUT);
   while(true) {
+    // x = analogRead(4);
+    x = adc1_get_raw((adc1_channel_t)6); // pin 34 adc1_6
+    vTaskDelay(100);
+    // x = map(x, 0.0, 4095.0, 0.0, 1.5);
+    // vTaskDelay(100);
+
+    // y = analogRead(0);
+    y = adc1_get_raw((adc1_channel_t)7); // pin 35 adc1_7
+    vTaskDelay(100);
+    // y = map(y, 0.0, 4095.0, 0.0, 1.5);
+    // vTaskDelay(100);
+
+    z = analogRead(0);
+    vTaskDelay(100);
+
+    Serial.print(x);
+    Serial.print("  ");
+    Serial.print(y);
+    Serial.print("  ");
+    Serial.println(z);
     vTaskDelay(100);
   }
 }
 
 void webserver(void *pvParameters) {
   (void) pvParameters;
+
   while(true) {
-    vTaskDelay(pdMS_TO_TICKS(1000)); // delay(1000);
-    Serial.begin(115200);
-    Serial.println();
-
-    // Inicializar el sistema de archivos
-    SPIFFS.begin();
-    Serial.println("Sistema de archivos inicializado");
-
-    // Conexión con router WiFi
-    WiFi.mode(WIFI_AP);  // WIFI_AP  WIFI_STA  WIFI_AP_STA
-    WiFi.softAP(ssid_AP, password_AP);
-    WiFi.begin(ssid, password);  
-
-    Serial.println("");
-    for (int k = 0; k < 20; k++) {
-      if (WiFi.status() == WL_CONNECTED)
-        break;
-      yield();
-      vTaskDelay(pdMS_TO_TICKS(500)); // delay(500);
-      yield();
-      Serial.print(".");
-
-    }
-    yield();
-
-    // Muestra datos de conexión en Serial Monitor
-    Serial.println("");
-    Serial.print("Conectado a ");
-    Serial.println(ssid);
-    Serial.print("Dirección IP: ");
-    Serial.println(WiFi.localIP());  // Dirección IP asignada a su ESP
-    Serial.print("Dirección IP (Access Point): ");
-    Serial.println(WiFi.softAPIP());
-
-    // Inicializa respondedor mDNS para SCADA.local
-    if (!MDNS.begin("SCADA")) {
-      // En caso de error imprime mensaje y se queda ciclado
-      Serial.println("Error al configurar el respondedor MDNS!");
-      while (true)
-        vTaskDelay(pdMS_TO_TICKS(1000)); // delay(1000);
-    }
-
-    // Inicializar el servidor web
-    // Define las rutas y métodos a ejecutar
-    server.on("/", handleRoot);
-    server.on("/getInfo", getInfo);
-    server.on("/sensors", sensors);
-    // Si no encuentra la ruta, lo maneja como un URI (identificador de recurso/archivo)
-    server.onNotFound(handleWebRequests); 
-    server.begin();
-
-    Serial.println("mDNS responder started");
-    MDNS.addService("http", "tcp", 80);
-    Wire.begin();
-
-    Serial.println("Todo al 100%");
+    server.handleClient();
+    vTaskDelay(100);
   }
 }

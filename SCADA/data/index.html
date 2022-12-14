@@ -1,70 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Side Navigation Bar</title>
-	<link rel="stylesheet" href="styles.css">
+  <head>
+  	<meta charset="UTF-8">
+  	<title>Side Navigation Bar</title>
+  	<link rel="stylesheet" href="styles.css">
+  </head>
 
-</head>
-<body>
-
-<div class="wrapper">
+  <body>
+  <div class="wrapper">
     <div class="sidebar">
-        <h2>Sidebar</h2>
-        <ul>
-            <li><a href="index.html"><i class="fas fa-home"></i>Informacio del sistema</a></li>
-            <li><a href="monitoreo.html"><i class="fas fa-user"></i>Monitoreo Puntual</a></li>
-            <li><a href="graficas.html"><i class="fas fa-address-card"></i>Graficas</a></li>
-            <li><a href="#"><i class="fas fa-address-book"></i>Acerca de</a></li>
-        </ul> 
-        <div class="social_media">
-          <a href="#"><i class="fab fa-facebook-f"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-      </div>
-    </div>
+      <h2>Sidebar</h2>
+      <ul>
+          <li><a href="index.html"><i class="fas fa-home"></i>Informacio del sistema</a></li>
+          <li><a href="monitoreo.html"><i class="fas fa-user"></i>Monitoreo Puntual</a></li>
+          <li><a href="graficas.html"><i class="fas fa-address-card"></i>Graficas</a></li>
+          <li><a href="wifimanager.html"><i class="fas fa-address-book"></i>Redes</a></li>
+      </ul> 
+  </div>
     <div class="main_content">
-        <div class="header">Welcome!! Have a nice day.</div>  
+      <div class="header">Sistema de monitoreo.</div>  
         <div class="info">
-          <div><br>
-            <p>Nombre :  <span id="nombree"></span> </p>
-            <br>
-            <p>Direccion Fisica :  <span id="mac"> </p>
-            <br>
-            <p>Version de Firmware : <span id="fv"> </p>
-            <br>
-            <p>Conexion Wifi :  <span id="ssid"></p>
-            <br>
-            <p>Direccion Ip :  <span id="ip"> </p>
-            <br>
-            <p>Mascara de Subred:</p><span id="masc"> </p>
-          </div>
+        <div>
+          <br><p>Nombre :  <span id="nombree"></span> </p>
+          <br><p>Direccion Fisica :  <span id="mac"> </p>
+          <br><p>Version de Firmware : <span id="fv"> </p>
+          <br><p>Conexion Wifi :  <span id="ssid"></p>
+          <br><p>Direccion Ip :  <span id="ip"> </p>
+          <!-- <br><p>Mascara de Subred:</p><span id="masc"> </p> -->
+        </div>
       </div>
     </div>
-</div>
-<script>
-window.onload=getInfo();
-//setInterval(getInfo2, 20);
-function getInfo(){
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-    var txt = this.responseText;
-    var obj = JSON.parse(txt);
-      document.getElementById("nombree").innerHTML = obj.nombre;
-      document.getElementById("mac").innerHTML = obj.mac;
-      document.getElementById("fv").innerHTML = obj.fv;
-      document.getElementById("ssid").innerHTML = obj.ssid;
-      document.getElementById("ip").innerHTML = obj.ip;
-      document.getElementById("masc").innerHTML = obj.masc;
-      
-    }  
-  };
- xhttp.open("GET", "getInfo", true);
- xhttp.send();
-}
-</script>
+  </div>
 
-
-</body>
+  <script>
+    window.onload=getInfo();
+    //setInterval(getInfo2, 20);
+    function getInfo(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var txt = this.responseText;
+          var obj = JSON.parse(txt);
+          document.getElementById("nombree").innerHTML = obj.nombre;
+          document.getElementById("mac").innerHTML = obj.mac;
+          document.getElementById("fv").innerHTML = obj.fv;
+          document.getElementById("ssid").innerHTML = obj.ssid;
+          document.getElementById("ip").innerHTML = obj.ip;
+          // document.getElementById("masc").innerHTML = obj.masc;
+        }  
+      };
+      xhttp.open("GET", "getInfo", true);
+      xhttp.send();
+    }
+  </script>
+  
+  </body>
 </html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP Wi-Fi Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="wrapper">
+  <div class="sidebar">
+    <h2>Sidebar</h2>
+    <ul>
+        <li><a href="index.html"><i class="fas fa-home"></i>Informacio del sistema</a></li>
+        <li><a href="monitoreo.html"><i class="fas fa-user"></i>Monitoreo Puntual</a></li>
+        <li><a href="graficas.html"><i class="fas fa-address-card"></i>Graficas</a></li>
+        <li><a href="wifimanager.html"><i class="fas fa-address-book"></i>Redes</a></li>
+    </ul> 
+</div>
+</div>
+  <div class="content">
+    <div class="card-grid">
+      <div class="card">
+        <form action="/" method="POST">
+          <p>
+            <label for="ssid">SSID</label>
+            <input type="text" id ="ssid" name="ssid"><br>
+            <label for="pass">Password</label>
+            <input type="text" id ="pass" name="pass"><br>
+            <label for="ip">IP Address</label>
+            <input type="text" id ="ip" name="ip" value="192.168.1.200"><br>
+            <label for="gateway">Gateway Address</label>
+            <input type="text" id ="gateway" name="gateway" value="192.168.1.1"><br>
+            <input type ="submit" value ="Submit">
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
